@@ -1,18 +1,17 @@
 ﻿using MongoDB.Driver;
 using Play.Catalog.Service.Entities;
+using Play.Catalog.Service.Repository.Interface;
 
 namespace Play.Catalog.Service.Repository;
 
-public class ItemsRepository
+public class ItemsRepository : IItemsRepository
 {
     private const string collectionName = "Items";
     private readonly IMongoCollection<Item> dbCollection;
     private readonly FilterDefinitionBuilder<Item> filterBuilder = Builders<Item>.Filter;
     
-    public ItemsRepository()
+    public ItemsRepository(IMongoDatabase database)
     {
-        var mangoClient = new MongoClient("mongodb://localhost:27017");
-        var database = mangoClient.GetDatabase("Catalog");
         dbCollection = database.GetCollection<Item>(collectionName);
     }
     

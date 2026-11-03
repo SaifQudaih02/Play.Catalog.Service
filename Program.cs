@@ -2,6 +2,10 @@ using Microsoft.OpenApi;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
+using MongoDB.Driver;
+using Play.Catalog.Service.Repository;
+using Play.Catalog.Service.Repository.Interface;
+using Play.Catalog.Service.settings;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +14,14 @@ var builder = WebApplication.CreateBuilder(args);
 BsonSerializer.RegisterSerializer(
     new GuidSerializer(GuidRepresentation.Standard)
     );
+
+var serviceSettings  = builder.Configuration.GetSection("ServiceSettings")
+    .Get<ServiceSettings>() ??
+                       throw new InvalidOperationException("ServiceSettings is missing.");
+var mongoDbSettings = builder.Configuration.GetSection("MongoDbSettings")
+    .Get<MongoDbSettings>() ??
+                      throw new InvalidOperationException("MongoDbSettings is missing.");
+
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -25,6 +37,15 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddControllers(options => {options.SuppressAsyncSuffixInActionNames = false;});
+
+builder.Services.AddSingleton(serviceProvider  =>
+{
+var mongoClient = new MongoClient(mongoDbSettings.ConnectionString);
+return mongoClient.GetDatabase(serviceSettings.ServiceName);
+});
+
+// Register repositories
+builder.Services.AddSingleton<IItemsRepository, ItemsRepository>();
 
 var app = builder.Build();
 

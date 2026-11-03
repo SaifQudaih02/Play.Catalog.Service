@@ -2,6 +2,7 @@
 using Play.Catalog.Service.Controller.Dtos;
 using Play.Catalog.Service.Entities;
 using Play.Catalog.Service.Repository;
+using Play.Catalog.Service.Repository.Interface;
 
 namespace Play.Catalog.Service.Controller;
 
@@ -11,7 +12,12 @@ namespace Play.Catalog.Service.Controller;
 public class ItemsController: ControllerBase
 {
 
-    private readonly ItemsRepository _itemsRepository = new();
+    private readonly IItemsRepository _itemsRepository;
+
+    public ItemsController(IItemsRepository itemsRepository)
+    {
+        _itemsRepository = itemsRepository;
+    }
 
     [HttpGet]
     public async Task<IEnumerable<ItemDto>> GetAsync()
